@@ -59,7 +59,7 @@ class ViewCashiersPanel extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
 
         // Table
-        String[] columns = {"Name", "Username", "Phone", "CNIC", "Salary (Rs.)", "Status", "Join Date"};
+        String[] columns = {"Name", "Username", "Phone", "CNIC", "Salary ($)", "Status", "Join Date"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {

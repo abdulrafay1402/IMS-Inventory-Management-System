@@ -377,8 +377,8 @@ public class NotificationDialog extends JDialog {
             double itemTotal = item.getQuantity() * item.getUnitPrice();
             data[i][0] = item.getProductName();
             data[i][1] = item.getQuantity();
-            data[i][2] = String.format("Rs. %.2f", item.getUnitPrice());
-            data[i][3] = String.format("Rs. %.2f", itemTotal);
+            data[i][2] = String.format("$%.2f", item.getUnitPrice());
+            data[i][3] = String.format("$%.2f", itemTotal);
             grandTotal += itemTotal;
         }
 
@@ -421,7 +421,7 @@ public class NotificationDialog extends JDialog {
         footerPanel.setBackground(Color.WHITE);
         footerPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
         
-        JLabel totalLabel = new JLabel("Grand Total: Rs. " + String.format("%.2f", grandTotal));
+        JLabel totalLabel = new JLabel("Grand Total: $" + String.format("%.2f", grandTotal));
         totalLabel.setFont(new Font("Arial", Font.BOLD, 18));
         totalLabel.setForeground(new Color(34, 139, 34));
         footerPanel.add(totalLabel, BorderLayout.EAST);

@@ -78,7 +78,7 @@ public class IndividualPaymentDialog extends JDialog {
         salaryLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         salaryLabel.setForeground(new Color(127, 140, 141));
         
-        JLabel salaryValue = new JLabel("Rs. " + String.format("%,.2f", baseSalary));
+        JLabel salaryValue = new JLabel("$" + String.format("%,.2f", baseSalary));
         salaryValue.setFont(new Font("Segoe UI", Font.BOLD, 20));
         salaryValue.setForeground(new Color(44, 62, 80));
         
@@ -173,7 +173,7 @@ public class IndividualPaymentDialog extends JDialog {
         finalLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         finalLabel.setForeground(new Color(52, 73, 94));
         
-        finalAmountLabel = new JLabel("Rs. " + String.format("%,.2f", baseSalary));
+        finalAmountLabel = new JLabel("$" + String.format("%,.2f", baseSalary));
         finalAmountLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
         finalAmountLabel.setForeground(new Color(41, 128, 185));
         
@@ -279,7 +279,7 @@ public class IndividualPaymentDialog extends JDialog {
                 finalAmountLabel.setText("Cannot be negative");
             } else {
                 finalAmountLabel.setForeground(new Color(41, 128, 185));
-                finalAmountLabel.setText("Rs. " + String.format("%,.2f", finalAmount));
+                finalAmountLabel.setText("$" + String.format("%,.2f", finalAmount));
             }
         } catch (NumberFormatException e) {
             finalAmountLabel.setForeground(new Color(231, 76, 60));

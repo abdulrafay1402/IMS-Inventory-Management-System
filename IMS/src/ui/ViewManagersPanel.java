@@ -38,7 +38,7 @@ class ViewManagersPanel extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
 
         // Table
-        String[] columns = {"ID", "Name", "Username", "Phone", "CNIC", "Salary (Rs.)", "Status"};
+        String[] columns = {"ID", "Name", "Username", "Phone", "CNIC", "Salary ($)", "Status"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {

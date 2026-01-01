@@ -59,10 +59,10 @@ public class SalaryDAO {
             }
             
             // Build payment notes with breakdown
-            String notes = "Individual payment for " + paymentMonth + " (Base: Rs. " + String.format("%.2f", baseSalary);
-            if (bonus > 0) notes += ", Bonus: Rs. " + String.format("%.2f", bonus);
+            String notes = "Individual payment for " + paymentMonth + " (Base: $" + String.format("%.2f", baseSalary);
+            if (bonus > 0) notes += ", Bonus: $" + String.format("%.2f", bonus);
             if (adjustment != 0) {
-                notes += ", " + (adjustment > 0 ? "Increment" : "Decrement") + ": Rs. " + String.format("%.2f", Math.abs(adjustment));
+                notes += ", " + (adjustment > 0 ? "Increment" : "Decrement") + ": $" + String.format("%.2f", Math.abs(adjustment));
             }
             notes += ")";
             

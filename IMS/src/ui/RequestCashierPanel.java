@@ -74,7 +74,7 @@ class RequestCashierPanel extends JPanel {
         addFormField(formPanel, gbc, row++, "Phone (11 digits):", phoneField = new JTextField(20));
 
         // Salary
-        addFormField(formPanel, gbc, row++, "Monthly Salary (Rs.)*:", salaryField = new JTextField(20));
+        addFormField(formPanel, gbc, row++, "Monthly Salary ($)*:", salaryField = new JTextField(20));
         salaryField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -335,7 +335,7 @@ class RequestCashierPanel extends JPanel {
                         ceoUserId,
                         "CASHIER_REQUEST",
                         "New Cashier Request",
-                        "Manager " + currentUser.getName() + " has requested a new cashier: " + name + " (Salary: Rs. " + String.format("%,.2f", salary) + ")",
+                        "Manager " + currentUser.getName() + " has requested a new cashier: " + name + " (Salary: $" + String.format("%,.2f", salary) + ")",
                         username // Store username as related ID for future reference
                     );
                 }
@@ -345,7 +345,7 @@ class RequestCashierPanel extends JPanel {
             }
             
             ElegantMessageDialog.showMessage(this, 
-                "Cashier request submitted successfully!\nSalary: Rs. " + String.format("%,.2f", salary) + "\nAwaiting CEO approval.", 
+                "Cashier request submitted successfully!\nSalary: $" + String.format("%,.2f", salary) + "\nAwaiting CEO approval.", 
                 "Success", 
                 JOptionPane.INFORMATION_MESSAGE);
             clearForm();

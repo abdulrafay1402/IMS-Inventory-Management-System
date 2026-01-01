@@ -320,7 +320,7 @@ public class SalaryManagementPanel extends JPanel {
         }
 
         // Extract base salary amount
-        String baseSalaryStr = salaryStr.replace("Rs. ", "").replace(",", "");
+        String baseSalaryStr = salaryStr.replace("$", "").replace(",", "");
         double baseSalary = Double.parseDouble(baseSalaryStr);
 
         // Show payment dialog with bonus and adjustment options
@@ -344,15 +344,13 @@ public class SalaryManagementPanel extends JPanel {
             );
 
             if (success) {
-                String breakdown = "Base: Rs. " + String.format("%,.2f", baseSalary);
-                if (bonus > 0) breakdown += "\nBonus: Rs. " + String.format("%,.2f", bonus);
+                String breakdown = "Base: $" + String.format("%,.2f", baseSalary);
+                if (bonus > 0) breakdown += "\nBonus: $" + String.format("%,.2f", bonus);
                 if (adjustment != 0) {
-                    breakdown += (adjustment > 0 ? "\nIncrement: Rs. " : "\nDecrement: Rs. ") + 
-                                String.format("%,.2f", Math.abs(adjustment));
+                    breakdown += (adjustment > 0 ? "\nIncrement: $" : "\nDecrement: $") + 
+                        String.format("%,.2f", Math.abs(adjustment));
                 }
-                breakdown += "\nFinal Amount: Rs. " + String.format("%,.2f", finalAmount);
-
-                JOptionPane.showMessageDialog(this,
+                breakdown += "\nFinal Amount: $" + String.format("%,.2f", finalAmount);                JOptionPane.showMessageDialog(this,
                     "Salary paid successfully to " + employeeName + "!\n\n" + breakdown + "\n\nMonth: " + selectedMonth,
                     "Payment Successful",
                     JOptionPane.INFORMATION_MESSAGE);
@@ -360,7 +358,7 @@ public class SalaryManagementPanel extends JPanel {
                 // Create notification for CEO
                 int ceoId = database.UserDAO.getCEOUserId();
                 if (ceoId > 0) {
-                    String notifBreakdown = "Rs. " + String.format("%,.2f", finalAmount);
+                    String notifBreakdown = "$" + String.format("%,.2f", finalAmount);
                     if (bonus > 0 || adjustment != 0) {
                         notifBreakdown += " (with adjustments)";
                     }
