@@ -22,9 +22,12 @@ public class UserDAO {
 
             if (rs.next()) {
                 String role = rs.getString("role");
+                double salary = rs.getDouble("salary");
+                User user = null;
+                
                 switch (role) {
                     case "CEO":
-                        return new CEO(
+                        user = new CEO(
                                 rs.getInt("id"),
                                 rs.getString("username"),
                                 rs.getString("password"),
@@ -33,8 +36,9 @@ public class UserDAO {
                                 rs.getString("cnic"),
                                 rs.getString("status")
                         );
+                        break;
                     case "MANAGER":
-                        return new Manager(
+                        user = new Manager(
                                 rs.getInt("id"),
                                 rs.getString("username"),
                                 rs.getString("password"),
@@ -43,6 +47,7 @@ public class UserDAO {
                                 rs.getString("cnic"),
                                 rs.getString("status")
                         );
+                        break;
                     case "CASHIER":
                         Cashier cashier = new Cashier(
                                 rs.getInt("id"),
@@ -55,8 +60,38 @@ public class UserDAO {
                         );
                         // Set manager ID for cashier
                         cashier.setManagerId(getManagerIdForCashier(rs.getInt("id")));
-                        return cashier;
+                        user = cashier;
+                        break;
                 }
+                
+                if (user != null) {
+                    user.setSalary(salary);
+                    return user;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseConnection.closeResources(rs, ps, conn);
+        }
+        return null;
+    }
+
+    // Get joining date for a user
+    public static String getJoiningDate(int userId) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            String sql = "SELECT joining_date FROM users WHERE id = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, userId);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("joining_date");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -152,7 +187,7 @@ public class UserDAO {
 
     // Add new manager (by CEO) - KEEP ONLY ONE VERSION OF THIS METHOD
     public static boolean addManager(String username, String password, String name,
-                                     String phone, String cnic, int ceoId) {
+                                     String phone, String cnic, double salary, int ceoId) {
         Connection conn = null;
         PreparedStatement ps1 = null;
         PreparedStatement ps2 = null;
@@ -162,15 +197,16 @@ public class UserDAO {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // Insert manager
-            String sql1 = "INSERT INTO users (username, password, role, name, phone, cnic, status) " +
-                    "VALUES (?, ?, 'MANAGER', ?, ?, ?, 'ACTIVE')";
+            // Insert manager with salary
+            String sql1 = "INSERT INTO users (username, password, role, name, phone, cnic, salary, status) " +
+                    "VALUES (?, ?, 'MANAGER', ?, ?, ?, ?, 'ACTIVE')";
             ps1 = conn.prepareStatement(sql1, Statement.RETURN_GENERATED_KEYS);
             ps1.setString(1, username);
             ps1.setString(2, password);
             ps1.setString(3, name);
             ps1.setString(4, phone);
             ps1.setString(5, cnic);
+            ps1.setDouble(6, salary);
 
             int rows = ps1.executeUpdate();
             if (rows > 0) {
@@ -321,6 +357,29 @@ public class UserDAO {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
 
+            // Get cashier and manager info before updating
+            String getInfoSql = "SELECT cm.cashier_id, cm.manager_id, u.name as cashier_name, u.username as cashier_username " +
+                               "FROM cashier_manager cm " +
+                               "JOIN users u ON cm.cashier_id = u.id " +
+                               "WHERE cm.id = ?";
+            PreparedStatement getInfoPs = conn.prepareStatement(getInfoSql);
+            getInfoPs.setInt(1, requestId);
+            ResultSet infoRs = getInfoPs.executeQuery();
+            
+            int cashierId = 0;
+            int managerId = 0;
+            String cashierName = "";
+            String cashierUsername = "";
+            
+            if (infoRs.next()) {
+                cashierId = infoRs.getInt("cashier_id");
+                managerId = infoRs.getInt("manager_id");
+                cashierName = infoRs.getString("cashier_name");
+                cashierUsername = infoRs.getString("cashier_username");
+            }
+            infoRs.close();
+            getInfoPs.close();
+
             // Update cashier_manager status
             String sql1 = "UPDATE cashier_manager SET status = ?, approval_date = CURRENT_TIMESTAMP, " +
                     "rejection_reason = ? WHERE id = ?";
@@ -331,13 +390,38 @@ public class UserDAO {
 
             int rows = ps1.executeUpdate();
 
-            if (rows > 0 && approve) {
+            if (rows > 0 && approve && cashierId > 0) {
                 // Update user status to ACTIVE
-                String sql2 = "UPDATE users u JOIN cashier_manager cm ON u.id = cm.cashier_id " +
-                        "SET u.status = 'ACTIVE' WHERE cm.id = ?";
+                String sql2 = "UPDATE users SET status = 'ACTIVE' WHERE id = ?";
                 ps2 = conn.prepareStatement(sql2);
-                ps2.setInt(1, requestId);
+                ps2.setInt(1, cashierId);
                 ps2.executeUpdate();
+            }
+
+            // Create notification for manager
+            if (rows > 0 && managerId > 0) {
+                try {
+                    if (approve) {
+                        NotificationDAO.createNotification(
+                            managerId,
+                            "CASHIER_APPROVED",
+                            "Cashier Request Approved",
+                            "Your cashier request for " + cashierName + " has been approved by CEO.",
+                            cashierUsername
+                        );
+                    } else {
+                        NotificationDAO.createNotification(
+                            managerId,
+                            "CASHIER_REJECTED",
+                            "Cashier Request Rejected",
+                            "Your cashier request for " + cashierName + " has been rejected. Reason: " + (reason != null ? reason : "Not specified"),
+                            cashierUsername
+                        );
+                    }
+                } catch (Exception e) {
+                    // Log but don't fail the operation
+                    System.err.println("Failed to create notification: " + e.getMessage());
+                }
             }
 
             conn.commit();
@@ -357,5 +441,25 @@ public class UserDAO {
         }
         return false;
     }
-}
 
+    // Get CEO user ID
+    public static int getCEOUserId() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = DatabaseConnection.getConnection();
+            String sql = "SELECT id FROM users WHERE role = 'CEO' AND status = 'ACTIVE' LIMIT 1";
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseConnection.closeResources(rs, ps, conn);
+        }
+        return 0;
+    }
+}

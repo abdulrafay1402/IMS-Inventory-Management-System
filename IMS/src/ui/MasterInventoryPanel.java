@@ -72,9 +72,30 @@ class MasterInventoryPanel extends JPanel {
         };
         inventoryTable = new JTable(tableModel);
         inventoryTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        inventoryTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         inventoryTable.setFont(new Font("Arial", Font.PLAIN, 14));
         inventoryTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader header = inventoryTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 16));
+        header.setBackground(new Color(0, 102, 204)); // CEO Blue
+        header.setForeground(Color.WHITE);
+        header.setOpaque(true);
+        
+        inventoryTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(0, 102, 204)); // CEO Blue
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         // Color code rows based on stock status
         inventoryTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
@@ -334,12 +355,139 @@ class MasterInventoryPanel extends JPanel {
 
     private void showEditProductDialog(int productId, String currentName, String currentPrice,
                                        int currentQuantity, int currentMinStock) {
-        // Implementation similar to add dialog but with pre-filled values
-        // For brevity, I'll show the structure - you can implement the full edit functionality
-        ElegantMessageDialog.showMessage(this,
-                "Edit functionality for product: " + currentName + "<br>This would open an edit form similar to the add form but pre-filled with current values.",
-                "Edit Product",
-                JOptionPane.INFORMATION_MESSAGE);
+        JDialog editDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Edit Product", true);
+        editDialog.setLayout(new BorderLayout());
+        editDialog.setSize(500, 500);
+        editDialog.setLocationRelativeTo(this);
+
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(10, 10, 10, 10);
+
+        // Title
+        JLabel titleLabel = new JLabel("Edit Product Details");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        titleLabel.setForeground(new Color(0, 102, 204));
+        gbc.gridwidth = 2;
+        formPanel.add(titleLabel, gbc);
+
+        gbc.gridy++;
+        gbc.gridwidth = 1;
+
+        // Product Name
+        JLabel nameLabel = new JLabel("Product Name:");
+        nameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        formPanel.add(nameLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField nameField = new JTextField(currentName, 20);
+        nameField.setFont(new Font("Arial", Font.PLAIN, 14));
+        formPanel.add(nameField, gbc);
+
+        // Buying Price
+        gbc.gridx = 0;
+        gbc.gridy++;
+        JLabel priceLabel = new JLabel("Buying Price ($):");
+        priceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        formPanel.add(priceLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField priceField = new JTextField(currentPrice, 20);
+        priceField.setFont(new Font("Arial", Font.PLAIN, 14));
+        formPanel.add(priceField, gbc);
+
+        // Quantity
+        gbc.gridx = 0;
+        gbc.gridy++;
+        JLabel quantityLabel = new JLabel("Quantity:");
+        quantityLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        formPanel.add(quantityLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField quantityField = new JTextField(String.valueOf(currentQuantity), 20);
+        quantityField.setFont(new Font("Arial", Font.PLAIN, 14));
+        formPanel.add(quantityField, gbc);
+
+        // Min Stock Level
+        gbc.gridx = 0;
+        gbc.gridy++;
+        JLabel minStockLabel = new JLabel("Min Stock Level:");
+        minStockLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        formPanel.add(minStockLabel, gbc);
+
+        gbc.gridx = 1;
+        JTextField minStockField = new JTextField(String.valueOf(currentMinStock), 20);
+        minStockField.setFont(new Font("Arial", Font.PLAIN, 14));
+        formPanel.add(minStockField, gbc);
+
+        editDialog.add(formPanel, BorderLayout.CENTER);
+
+        // Buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 20));
+        JButton saveButton = createStyledButton("Update Product", new Color(0, 102, 204), Color.WHITE);
+        saveButton.setPreferredSize(new Dimension(180, 45));
+        saveButton.addActionListener(e -> {
+            if (updateProduct(productId, nameField.getText(), priceField.getText(),
+                    quantityField.getText(), minStockField.getText())) {
+                editDialog.dispose();
+                loadInventory();
+            }
+        });
+
+        JButton cancelButton = createStyledButton("Cancel", new Color(128, 128, 128), Color.WHITE);
+        cancelButton.setPreferredSize(new Dimension(130, 45));
+        cancelButton.addActionListener(e -> editDialog.dispose());
+
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+        editDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        editDialog.setVisible(true);
+    }
+
+    private boolean updateProduct(int productId, String name, String price, String quantity, String minStock) {
+        // Validate inputs
+        if (name.trim().isEmpty()) {
+            ElegantMessageDialog.showMessage(this, "Product name cannot be empty", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        try {
+            double priceValue = Double.parseDouble(price);
+            int quantityValue = Integer.parseInt(quantity);
+            int minStockValue = Integer.parseInt(minStock);
+
+            if (priceValue <= 0) {
+                ElegantMessageDialog.showMessage(this, "Price must be greater than 0", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            if (quantityValue < 0) {
+                ElegantMessageDialog.showMessage(this, "Quantity cannot be negative", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            if (minStockValue < 0) {
+                ElegantMessageDialog.showMessage(this, "Minimum stock level cannot be negative", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            // Update in database
+            if (InventoryDAO.updateCEOInventory(productId, name.trim(), priceValue, quantityValue, minStockValue)) {
+                ElegantMessageDialog.showMessage(this, "Product updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                return true;
+            } else {
+                ElegantMessageDialog.showMessage(this, "Failed to update product", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException e) {
+            ElegantMessageDialog.showMessage(this, "Please enter valid numbers for price, quantity, and min stock", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        return false;
     }
 
     private void deleteSelectedProduct() {

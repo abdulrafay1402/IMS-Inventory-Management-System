@@ -38,7 +38,7 @@ class ViewManagersPanel extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
 
         // Table
-        String[] columns = {"ID", "Name", "Username", "Phone", "CNIC", "Status"};
+        String[] columns = {"ID", "Name", "Username", "Phone", "CNIC", "Salary (Rs.)", "Status"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -47,9 +47,30 @@ class ViewManagersPanel extends JPanel {
         };
         managersTable = new JTable(tableModel);
         managersTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        managersTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         managersTable.setFont(new Font("Arial", Font.PLAIN, 14));
         managersTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader header = managersTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 16));
+        header.setBackground(new Color(0, 102, 204)); // CEO Blue
+        header.setForeground(Color.WHITE);
+        header.setOpaque(true);
+        
+        managersTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(0, 102, 204)); // CEO Blue
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(managersTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
@@ -105,15 +126,9 @@ class ViewManagersPanel extends JPanel {
                     manager.getUsername(),
                     manager.getPhone(),
                     manager.getCnic(),
+                    String.format("%,.2f", manager.getSalary()),
                     manager.getStatus()
             });
-        }
-
-        if (managers.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "No managers found in the system.",
-                    "Information",
-                    JOptionPane.INFORMATION_MESSAGE);
         }
     }
 }

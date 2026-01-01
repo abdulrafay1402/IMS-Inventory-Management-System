@@ -1,6 +1,7 @@
 package database;
 
 import models.Bill;
+import models.BillItemDetail;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,5 +95,81 @@ public class BillDAO {
         }
         return bills;
     }
-}
 
+    // Get bill items by bill number
+    public static List<BillItemDetail> getBillItems(String billNumber) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<BillItemDetail> items = new ArrayList<>();
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            String sql = "SELECT bi.id, bi.bill_id, ci.product_name, bi.quantity, bi.unit_price, bi.subtotal " +
+                    "FROM bill_items bi " +
+                    "JOIN bills b ON bi.bill_id = b.id " +
+                    "JOIN manager_inventory mi ON bi.manager_inventory_id = mi.id " +
+                    "JOIN ceo_inventory ci ON mi.ceo_inventory_id = ci.id " +
+                    "WHERE b.bill_number = ? " +
+                    "ORDER BY bi.id";
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, billNumber);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                BillItemDetail item = new BillItemDetail(
+                        rs.getInt("id"),
+                        rs.getInt("bill_id"),
+                        rs.getString("product_name"),
+                        rs.getInt("quantity"),
+                        rs.getDouble("unit_price"),
+                        rs.getDouble("subtotal")
+                );
+                items.add(item);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseConnection.closeResources(rs, ps, conn);
+        }
+        return items;
+    }
+
+    // Get bill by bill number
+    public static Bill getBillByNumber(String billNumber) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            String sql = "SELECT b.*, u.name as cashier_name, m.name as manager_name " +
+                    "FROM bills b " +
+                    "JOIN users u ON b.cashier_id = u.id " +
+                    "JOIN users m ON b.manager_id = m.id " +
+                    "WHERE b.bill_number = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, billNumber);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return new Bill(
+                        rs.getInt("id"),
+                        rs.getString("bill_number"),
+                        rs.getInt("cashier_id"),
+                        rs.getInt("manager_id"),
+                        rs.getDouble("total_amount"),
+                        rs.getTimestamp("bill_date"),
+                        rs.getString("status"),
+                        rs.getString("cashier_name"),
+                        rs.getString("manager_name")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseConnection.closeResources(rs, ps, conn);
+        }
+        return null;
+    }
+}

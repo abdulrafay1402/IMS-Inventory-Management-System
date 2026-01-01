@@ -50,9 +50,30 @@ class ManagerInventoryPanel extends JPanel {
         };
         inventoryTable = new JTable(tableModel);
         inventoryTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        inventoryTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         inventoryTable.setFont(new Font("Arial", Font.PLAIN, 14));
         inventoryTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader header = inventoryTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 16));
+        header.setBackground(new Color(34, 139, 34)); // Manager Green
+        header.setForeground(Color.WHITE);
+        header.setOpaque(true);
+        
+        inventoryTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(34, 139, 34));
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         // Color code rows based on stock status
         inventoryTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {

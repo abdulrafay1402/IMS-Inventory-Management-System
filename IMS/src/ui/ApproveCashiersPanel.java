@@ -51,9 +51,30 @@ class ApproveCashiersPanel extends JPanel {
         };
         requestsTable = new JTable(tableModel);
         requestsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        requestsTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         requestsTable.setFont(new Font("Arial", Font.PLAIN, 14));
         requestsTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader header = requestsTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 16));
+        header.setBackground(new Color(0, 102, 204)); // CEO Blue
+        header.setForeground(Color.WHITE);
+        header.setOpaque(true);
+        
+        requestsTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(0, 102, 204));
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(requestsTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));

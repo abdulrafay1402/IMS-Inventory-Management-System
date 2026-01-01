@@ -11,6 +11,7 @@ public abstract class User {
     protected String name;
     protected String phone;
     protected String cnic;
+    protected double salary;
     protected String status;
     protected LocalDateTime createdDate;
     protected LocalDateTime lastUpdated;
@@ -24,6 +25,7 @@ public abstract class User {
         this.name = name;
         this.phone = phone;
         this.cnic = cnic;
+        this.salary = 0.0;
         this.status = status;
     }
 
@@ -56,6 +58,10 @@ public abstract class User {
         return cnic;
     }
 
+    public double getSalary() {
+        return salary;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -71,6 +77,10 @@ public abstract class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public void setSalary(double salary) {
+        this.salary = salary;
     }
 }
 

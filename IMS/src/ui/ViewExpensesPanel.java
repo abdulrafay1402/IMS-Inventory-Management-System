@@ -64,9 +64,30 @@ class ViewExpensesPanel extends JPanel {
         };
         expensesTable = new JTable(tableModel);
         expensesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        expensesTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         expensesTable.setFont(new Font("Arial", Font.PLAIN, 14));
         expensesTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader header = expensesTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 16));
+        header.setBackground(new Color(0, 102, 204)); // CEO Blue
+        header.setForeground(Color.WHITE);
+        header.setOpaque(true);
+        
+        expensesTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(0, 102, 204)); // CEO Blue
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         // Color code rows based on category
         expensesTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {

@@ -297,7 +297,7 @@ public class ProfileDialog extends JDialog {
             user.setPassword(password);
             user.setPhone(phone);
 
-            JOptionPane.showMessageDialog(this,
+            ElegantMessageDialog.showMessage(this,
                     "Profile updated successfully!",
                     "Success",
                     JOptionPane.INFORMATION_MESSAGE);
@@ -308,7 +308,7 @@ public class ProfileDialog extends JDialog {
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+        ElegantMessageDialog.showMessage(this, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
 

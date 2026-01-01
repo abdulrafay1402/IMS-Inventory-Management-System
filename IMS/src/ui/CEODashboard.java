@@ -1,6 +1,7 @@
 package ui;
 
 import models.CEO;
+import database.NotificationDAO;
 import utils.ElegantMessageDialog;
 import javax.swing.*;
 import java.awt.*;
@@ -62,6 +63,7 @@ public class CEODashboard extends JFrame {
         tabbedPane.addTab("View Managers", new ViewManagersPanel());
         tabbedPane.addTab("Master Inventory", new MasterInventoryPanel(currentUser));
         tabbedPane.addTab("View Expenses", new ViewExpensesPanel());
+        tabbedPane.addTab("Salary Management", new SalaryManagementPanel(currentUser));
         tabbedPane.addTab("Financial Reports", new EnhancedFinancialReportsPanel());
 
         add(tabbedPane, BorderLayout.CENTER);
@@ -77,8 +79,18 @@ public class CEODashboard extends JFrame {
         int headerHeight = Math.max(80, screenHeight / 12);
         int hPadding = Math.max(30, screenWidth / 40);
         
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(0, 102, 204));
+        JPanel headerPanel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                GradientPaint gp = new GradientPaint(0, 0, new Color(0, 102, 204), getWidth(), 0, new Color(0, 153, 255));
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(headerPadding, hPadding, headerPadding, hPadding));
         headerPanel.setPreferredSize(new Dimension(0, headerHeight));
 
@@ -89,7 +101,7 @@ public class CEODashboard extends JFrame {
         titleLabel.setForeground(Color.WHITE);
 
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, Math.max(15, screenWidth / 80), 0));
-        rightPanel.setBackground(new Color(0, 102, 204));
+        rightPanel.setOpaque(false);
 
         // Responsive user label font
         int userLabelFontSize = Math.max(14, screenWidth / 80);
@@ -110,8 +122,26 @@ public class CEODashboard extends JFrame {
         logoutButton.setPreferredSize(new Dimension(buttonWidth, buttonHeight));
         logoutButton.setFocusPainted(false);
         logoutButton.addActionListener(e -> logout());
+        
+        // Notification button with badge
+        final JButton notificationButton = createNotificationButton();
+        notificationButton.setPreferredSize(new Dimension(Math.max(160, buttonWidth), buttonHeight));
+        notificationButton.setFocusPainted(false);
+        notificationButton.addActionListener(e -> {
+            NotificationDialog dialog = new NotificationDialog(this, currentUser);
+            dialog.setVisible(true);
+            // Update badge after dialog closes (setVisible blocks until closed)
+            int unreadCount = NotificationDAO.getUnreadCount(currentUser.getId());
+            if (unreadCount > 0) {
+                notificationButton.setText("NOTIFICATIONS (" + unreadCount + ")");
+            } else {
+                notificationButton.setText("NOTIFICATIONS");
+            }
+            notificationButton.repaint();
+        });
 
         rightPanel.add(userLabel);
+        rightPanel.add(notificationButton);
         rightPanel.add(profileButton);
         rightPanel.add(logoutButton);
 
@@ -162,6 +192,47 @@ public class CEODashboard extends JFrame {
 
         return button;
     }
+    
+    private JButton createNotificationButton() {
+        int unreadCount = NotificationDAO.getUnreadCount(currentUser.getId());
+        String bellText = unreadCount > 0 ? "NOTIFICATIONS (" + unreadCount + ")" : "NOTIFICATIONS";
+        
+        JButton button = new JButton(bellText) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                Color paintColor = getModel().isRollover() ? new Color(255, 193, 7).darker() : new Color(255, 193, 7);
+                g2.setColor(paintColor);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+                super.paintComponent(g);
+            }
+        };
+        
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int buttonFontSize = Math.max(11, screenSize.width / 120);
+        button.setFont(new Font("Arial", Font.BOLD, buttonFontSize));
+        button.setForeground(Color.BLACK);
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        button.setOpaque(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.repaint();
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.repaint();
+            }
+        });
+
+        return button;
+    }
+    
     private void logout() {
         int confirm = ElegantMessageDialog.showConfirm(this,
                 "Are you sure you want to logout?",

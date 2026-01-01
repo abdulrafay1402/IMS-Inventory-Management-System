@@ -41,8 +41,7 @@ class AddExpensePanel extends JPanel {
         formPanel.setBorder(BorderFactory.createEmptyBorder(formPadding, formPadding, formPadding, formPadding));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(12, 12, 12, 12);
-        gbc.anchor = GridBagConstraints.CENTER; // Center alignment
+        gbc.insets = new Insets(8, 10, 8, 10);
 
         int row = 0;
 
@@ -164,13 +163,15 @@ class AddExpensePanel extends JPanel {
         gbc.gridy = row;
         gbc.weightx = 0.3;
         gbc.gridwidth = 1;
+        gbc.insets = new Insets(8, 10, 8, 5);
         JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Arial", Font.BOLD, 16));
+        label.setFont(new Font("Arial", Font.BOLD, 15));
         panel.add(label, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 0.7;
-        field.setFont(new Font("Arial", Font.PLAIN, 16));
+        gbc.insets = new Insets(8, 5, 8, 10);
+        field.setFont(new Font("Arial", Font.PLAIN, 15));
         if (field instanceof JTextField) {
             ((JTextField) field).setPreferredSize(new Dimension(200, 40));
         }

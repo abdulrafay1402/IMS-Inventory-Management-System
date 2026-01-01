@@ -42,20 +42,42 @@ public class StockTransferDAO {
                 return false;
             }
 
-            // 3. Add to manager inventory (or update if exists)
-            String managerSql = "INSERT INTO manager_inventory (manager_id, ceo_inventory_id, " +
-                    "selling_price, current_quantity) " +
-                    "VALUES (?, ?, ?, ?) " +
-                    "ON DUPLICATE KEY UPDATE " +
-                    "current_quantity = current_quantity + VALUES(current_quantity), " +
-                    "selling_price = VALUES(selling_price), " +
-                    "last_updated = CURRENT_TIMESTAMP";
-            ps3 = conn.prepareStatement(managerSql);
-            ps3.setInt(1, managerId);
-            ps3.setInt(2, ceoProductId);
-            ps3.setDouble(3, sellingPrice);
-            ps3.setInt(4, quantity);
-            ps3.executeUpdate();
+            // 3. Add to manager inventory (or update if exists) - SQLite compatible
+            // First check if product already exists for this manager
+            String checkSql = "SELECT id, current_quantity FROM manager_inventory " +
+                    "WHERE manager_id = ? AND ceo_inventory_id = ?";
+            PreparedStatement checkPs = conn.prepareStatement(checkSql);
+            checkPs.setInt(1, managerId);
+            checkPs.setInt(2, ceoProductId);
+            ResultSet checkRs = checkPs.executeQuery();
+            
+            if (checkRs.next()) {
+                // Product exists, update quantity and selling price
+                int existingId = checkRs.getInt("id");
+                int existingQty = checkRs.getInt("current_quantity");
+                
+                String updateSql = "UPDATE manager_inventory SET " +
+                        "current_quantity = ?, selling_price = ?, last_updated = CURRENT_TIMESTAMP " +
+                        "WHERE id = ?";
+                ps3 = conn.prepareStatement(updateSql);
+                ps3.setInt(1, existingQty + quantity);
+                ps3.setDouble(2, sellingPrice);
+                ps3.setInt(3, existingId);
+                ps3.executeUpdate();
+            } else {
+                // Product doesn't exist, insert new
+                String insertSql = "INSERT INTO manager_inventory (manager_id, ceo_inventory_id, " +
+                        "selling_price, current_quantity) VALUES (?, ?, ?, ?)";
+                ps3 = conn.prepareStatement(insertSql);
+                ps3.setInt(1, managerId);
+                ps3.setInt(2, ceoProductId);
+                ps3.setDouble(3, sellingPrice);
+                ps3.setInt(4, quantity);
+                ps3.executeUpdate();
+            }
+            
+            checkRs.close();
+            checkPs.close();
 
             conn.commit();
             return true;

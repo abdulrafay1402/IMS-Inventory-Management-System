@@ -82,7 +82,7 @@ public class CashierInventoryDAO {
     }
 
     // Create a new bill with items (transaction)
-    public static boolean createBill(int cashierId, int managerId,
+    public static String createBill(int cashierId, int managerId,
                                      List<BillItem> items, double totalAmount) {
         Connection conn = null;
         PreparedStatement ps1 = null;
@@ -109,13 +109,13 @@ public class CashierInventoryDAO {
             int billRows = ps1.executeUpdate();
             if (billRows == 0) {
                 conn.rollback();
-                return false;
+                return null;
             }
 
             rs = ps1.getGeneratedKeys();
             if (!rs.next()) {
                 conn.rollback();
-                return false;
+                return null;
             }
             int billId = rs.getInt(1);
 
@@ -146,12 +146,12 @@ public class CashierInventoryDAO {
                 if (updateRows == 0) {
                     // Not enough stock
                     conn.rollback();
-                    return false;
+                    return null;
                 }
             }
 
             conn.commit();
-            return true;
+            return billNumber; // Return bill number on success
         } catch (SQLException e) {
             try {
                 if (conn != null) conn.rollback();
@@ -168,7 +168,7 @@ public class CashierInventoryDAO {
                 try { ps3.close(); } catch (SQLException e) { e.printStackTrace(); }
             }
         }
-        return false;
+        return null;
     }
 
     // Generate unique bill number

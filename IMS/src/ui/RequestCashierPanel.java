@@ -7,6 +7,7 @@ import java.awt.event.KeyEvent;
 import models.Manager;
 import database.UserDAO;
 import database.ManagerDAO;
+import database.NotificationDAO;
 import utils.ValidationUtils;
 import utils.ElegantMessageDialog;
 
@@ -17,6 +18,7 @@ class RequestCashierPanel extends JPanel {
     private JTextField cnicField;
     private JTextField usernameField;
     private JTextField phoneField;
+    private JTextField salaryField;
     private JPasswordField passwordField;
     private JPasswordField confirmPasswordField;
     private JButton requestButton;
@@ -43,7 +45,7 @@ class RequestCashierPanel extends JPanel {
         formPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(8, 10, 8, 10);
 
         int row = 0;
 
@@ -71,6 +73,15 @@ class RequestCashierPanel extends JPanel {
         // Phone
         addFormField(formPanel, gbc, row++, "Phone (11 digits):", phoneField = new JTextField(20));
 
+        // Salary
+        addFormField(formPanel, gbc, row++, "Monthly Salary (Rs.)*:", salaryField = new JTextField(20));
+        salaryField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                validateSalary();
+            }
+        });
+
         // Password
         addFormField(formPanel, gbc, row++, "Password*:", passwordField = new JPasswordField(20));
         passwordField.addKeyListener(new KeyAdapter() {
@@ -95,14 +106,13 @@ class RequestCashierPanel extends JPanel {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
 
-// Reduced horizontal gap from 15 to 8
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
         requestButton = createStyledButton("Submit Request", new Color(34, 139, 34), Color.WHITE);
-        requestButton.setPreferredSize(new Dimension(180, 48));
+        requestButton.setPreferredSize(new Dimension(200, 48));
         requestButton.addActionListener(e -> requestCashier());
 
         clearButton = createStyledButton("Clear Form", new Color(108, 117, 125), Color.WHITE);
-        clearButton.setPreferredSize(new Dimension(180, 48));
+        clearButton.setPreferredSize(new Dimension(200, 48));
         clearButton.addActionListener(e -> clearForm());
 
         buttonPanel.add(requestButton);
@@ -160,13 +170,15 @@ class RequestCashierPanel extends JPanel {
         gbc.gridy = row;
         gbc.weightx = 0.3;
         gbc.gridwidth = 1;
+        gbc.insets = new Insets(8, 10, 8, 5);
         JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Arial", Font.BOLD, 16));
+        label.setFont(new Font("Arial", Font.BOLD, 15));
         panel.add(label, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 0.7;
-        field.setFont(new Font("Arial", Font.PLAIN, 16));
+        gbc.insets = new Insets(8, 5, 8, 10);
+        field.setFont(new Font("Arial", Font.PLAIN, 15));
         panel.add(field, gbc);
     }
 
@@ -194,6 +206,24 @@ class RequestCashierPanel extends JPanel {
             cnicField.setBackground(new Color(255, 200, 200));
         } else {
             cnicField.setBackground(Color.WHITE);
+        }
+    }
+
+    private void validateSalary() {
+        String salary = salaryField.getText().trim();
+        if (!salary.isEmpty()) {
+            try {
+                double sal = Double.parseDouble(salary);
+                if (sal < 0) {
+                    salaryField.setBackground(new Color(255, 200, 200));
+                } else {
+                    salaryField.setBackground(Color.WHITE);
+                }
+            } catch (NumberFormatException e) {
+                salaryField.setBackground(new Color(255, 200, 200));
+            }
+        } else {
+            salaryField.setBackground(Color.WHITE);
         }
     }
 
@@ -236,13 +266,26 @@ class RequestCashierPanel extends JPanel {
         String cnic = cnicField.getText().trim();
         String username = usernameField.getText().trim();
         String phone = phoneField.getText().trim();
+        String salaryStr = salaryField.getText().trim();
         String password = new String(passwordField.getPassword());
         String confirmPassword = new String(confirmPasswordField.getPassword());
 
         // Validation
         if (name.isEmpty() || cnic.isEmpty() || username.isEmpty() ||
-                password.isEmpty() || confirmPassword.isEmpty()) {
+                password.isEmpty() || confirmPassword.isEmpty() || salaryStr.isEmpty()) {
             showError("Please fill all required fields (*)");
+            return;
+        }
+
+        double salary;
+        try {
+            salary = Double.parseDouble(salaryStr);
+            if (salary < 0) {
+                showError("Salary cannot be negative");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            showError("Please enter a valid salary amount");
             return;
         }
 
@@ -282,7 +325,29 @@ class RequestCashierPanel extends JPanel {
         }
 
         // Submit cashier request
-        if (ManagerDAO.requestCashier(currentUser.getId(), name, username, password, phone, cnic)) {
+        if (ManagerDAO.requestCashier(currentUser.getId(), name, username, password, phone, cnic, salary)) {
+            // Notify CEO about new cashier request
+            try {
+                // Get CEO user ID (role = 'CEO')
+                int ceoUserId = UserDAO.getCEOUserId();
+                if (ceoUserId > 0) {
+                    NotificationDAO.createNotification(
+                        ceoUserId,
+                        "CASHIER_REQUEST",
+                        "New Cashier Request",
+                        "Manager " + currentUser.getName() + " has requested a new cashier: " + name + " (Salary: Rs. " + String.format("%,.2f", salary) + ")",
+                        username // Store username as related ID for future reference
+                    );
+                }
+            } catch (Exception e) {
+                // Log but don't fail the operation
+                System.err.println("Failed to create notification: " + e.getMessage());
+            }
+            
+            ElegantMessageDialog.showMessage(this, 
+                "Cashier request submitted successfully!\nSalary: Rs. " + String.format("%,.2f", salary) + "\nAwaiting CEO approval.", 
+                "Success", 
+                JOptionPane.INFORMATION_MESSAGE);
             clearForm();
         } else {
             showError("Failed to submit cashier request. Please try again.");
@@ -294,6 +359,7 @@ class RequestCashierPanel extends JPanel {
         cnicField.setText("");
         usernameField.setText("");
         phoneField.setText("");
+        salaryField.setText("");
         passwordField.setText("");
         confirmPasswordField.setText("");
 
@@ -302,6 +368,7 @@ class RequestCashierPanel extends JPanel {
         cnicField.setBackground(Color.WHITE);
         usernameField.setBackground(Color.WHITE);
         phoneField.setBackground(Color.WHITE);
+        salaryField.setBackground(Color.WHITE);
         passwordField.setBackground(Color.WHITE);
         confirmPasswordField.setBackground(Color.WHITE);
     }

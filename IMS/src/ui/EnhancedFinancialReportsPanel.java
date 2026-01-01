@@ -104,7 +104,7 @@ class EnhancedFinancialReportsPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel tableLabel = new JLabel("Manager Performance Report (Revenue - COGS - Expenses = Net Profit)", SwingConstants.LEFT);
+        JLabel tableLabel = new JLabel("Manager Performance Report", SwingConstants.LEFT);
         tableLabel.setFont(new Font("Arial", Font.BOLD, 18));
         tableLabel.setForeground(new Color(0, 102, 204));
         tableLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
@@ -120,9 +120,30 @@ class EnhancedFinancialReportsPanel extends JPanel {
         };
         reportsTable = new JTable(tableModel);
         reportsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        reportsTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         reportsTable.setFont(new Font("Arial", Font.PLAIN, 14));
         reportsTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader header = reportsTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 16));
+        header.setBackground(new Color(0, 102, 204)); // CEO Blue
+        header.setForeground(Color.WHITE);
+        header.setOpaque(true);
+        
+        reportsTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(0, 102, 204));
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         // Color code profit/loss
         reportsTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {

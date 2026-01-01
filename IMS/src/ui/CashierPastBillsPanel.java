@@ -2,6 +2,7 @@ package ui;
 
 import models.*;
 import database.CashierInventoryDAO;
+import database.BillDAO;
 import utils.ElegantMessageDialog;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -61,9 +62,30 @@ class CashierPastBillsPanel extends JPanel {
         };
         billsTable = new JTable(tableModel);
         billsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        billsTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         billsTable.setFont(new Font("Arial", Font.PLAIN, 14));
         billsTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader billsHeader = billsTable.getTableHeader();
+        billsHeader.setFont(new Font("Arial", Font.BOLD, 16));
+        billsHeader.setBackground(new Color(0, 150, 136)); // Cashier Teal
+        billsHeader.setForeground(Color.WHITE);
+        billsHeader.setOpaque(true);
+        
+        billsTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(0, 150, 136)); // Cashier Teal
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(billsTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
@@ -186,13 +208,40 @@ class CashierPastBillsPanel extends JPanel {
             }
         };
         JTable itemsTable = new JTable(itemsModel);
-        itemsTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
         itemsTable.setRowHeight(25);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader itemsHeader = itemsTable.getTableHeader();
+        itemsHeader.setFont(new Font("Arial", Font.BOLD, 12));
+        itemsHeader.setBackground(new Color(0, 150, 136)); // Cashier Teal
+        itemsHeader.setForeground(Color.WHITE);
+        itemsHeader.setOpaque(true);
+        
+        itemsTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 12));
+                label.setBackground(new Color(0, 150, 136)); // Cashier Teal
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
-        // Note: You would fetch actual items here using bill ID
-        // For now, showing a message
-        JLabel noteLabel = new JLabel("<html><center>Bill items details<br>would be displayed here</center></html>", SwingConstants.CENTER);
-        noteLabel.setForeground(Color.GRAY);
+        // Fetch actual bill items from database
+        java.util.List<BillItemDetail> billItems = BillDAO.getBillItems(billNumber);
+        for (BillItemDetail item : billItems) {
+            itemsModel.addRow(new Object[]{
+                    item.getProductName(),
+                    item.getQuantity(),
+                    String.format("$%.2f", item.getUnitPrice()),
+                    String.format("$%.2f", item.getSubtotal())
+            });
+        }
 
         JScrollPane scrollPane = new JScrollPane(itemsTable);
         itemsPanel.add(scrollPane, BorderLayout.CENTER);

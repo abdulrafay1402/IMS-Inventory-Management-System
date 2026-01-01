@@ -59,7 +59,7 @@ class ViewCashiersPanel extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
 
         // Table
-        String[] columns = {"Name", "Username", "Phone", "CNIC", "Status", "Join Date"};
+        String[] columns = {"Name", "Username", "Phone", "CNIC", "Salary (Rs.)", "Status", "Join Date"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -68,9 +68,30 @@ class ViewCashiersPanel extends JPanel {
         };
         cashiersTable = new JTable(tableModel);
         cashiersTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        cashiersTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         cashiersTable.setFont(new Font("Arial", Font.PLAIN, 14));
         cashiersTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader header = cashiersTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 16));
+        header.setBackground(new Color(0, 102, 204)); // CEO Blue
+        header.setForeground(Color.WHITE);
+        header.setOpaque(true);
+        
+        cashiersTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(0, 102, 204)); // CEO Blue
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         // Color code rows based on status
         cashiersTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
@@ -198,6 +219,7 @@ class ViewCashiersPanel extends JPanel {
                     cashier.getUsername(),
                     cashier.getPhone(),
                     cashier.getCnic(),
+                    String.format("%,.2f", cashier.getSalary()),
                     "ACTIVE",
                     "Assigned" // You might want to store actual join date
             });
@@ -216,6 +238,7 @@ class ViewCashiersPanel extends JPanel {
                     request.getUsername(),
                     request.getPhone(),
                     request.getCnic(),
+                    "N/A", // Salary not available for pending requests
                     "PENDING_APPROVAL",
                     sdf.format(request.getRequestDate())
             });

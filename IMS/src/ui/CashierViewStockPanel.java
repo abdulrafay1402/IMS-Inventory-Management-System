@@ -52,9 +52,30 @@ class CashierViewStockPanel extends JPanel {
         };
         stockTable = new JTable(tableModel);
         stockTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        stockTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         stockTable.setFont(new Font("Arial", Font.PLAIN, 14));
         stockTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader header = stockTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 16));
+        header.setBackground(new Color(0, 150, 136)); // Cashier Teal
+        header.setForeground(Color.WHITE);
+        header.setOpaque(true);
+        
+        stockTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(0, 150, 136)); // Cashier Teal
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         // Color code rows based on stock status
         stockTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {

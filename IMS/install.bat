@@ -99,14 +99,24 @@ if errorlevel 1 (
 echo [OK] Application copied
 
 echo Copying resources...
-if exist "image\logo.ico" copy /Y "image\logo.ico" "%INSTALL_DIR%\" >nul
-if exist "image\logo.jpg" copy /Y "image\logo.jpg" "%INSTALL_DIR%\" >nul
-echo [OK] Resources copied
+if exist "image\logo.ico" (
+    copy /Y "image\logo.ico" "%INSTALL_DIR%\" >nul
+    echo [OK] Logo icon copied
+)
+if exist "image\logo.jpg" (
+    copy /Y "image\logo.jpg" "%INSTALL_DIR%\" >nul
+    echo [OK] Logo image copied
+)
 
 echo Copying database files...
-if exist "data\init_db.sql" copy /Y "data\init_db.sql" "%APP_DATA_DIR%\data\" >nul
-if exist "data\schema.sql" copy /Y "data\schema.sql" "%APP_DATA_DIR%\data\" >nul
-echo [OK] Database files copied
+if exist "data\init_db.sql" (
+    copy /Y "data\init_db.sql" "%APP_DATA_DIR%\data\" >nul
+    echo [OK] Database initialization script copied
+)
+if exist "data\schema.sql" (
+    copy /Y "data\schema.sql" "%APP_DATA_DIR%\data\" >nul
+    echo [OK] Database schema copied
+)
 echo.
 timeout /t 1 /nobreak >nul
 
@@ -120,7 +130,7 @@ cd /d "%INSTALL_DIR%"
 java -cp IMS.jar utils.InitializeDatabase >nul 2>&1
 if errorlevel 1 (
     echo [WARNING] Database initialization encountered an issue
-    echo [INFO] Database will be created on first run
+    echo [INFO] Database will be created automatically on first run
 ) else (
     echo [OK] Database initialized successfully
 )
@@ -151,15 +161,6 @@ powershell -Command "$WS = New-Object -ComObject WScript.Shell; $SC = $WS.Create
 echo [OK] Start Menu entry created
 echo.
 timeout /t 1 /nobreak >nul
-
-REM Create Desktop Shortcut
-set "DESKTOP=%USERPROFILE%\Desktop"
-powershell -Command "$WS = New-Object -ComObject WScript.Shell; $SC = $WS.CreateShortcut('%DESKTOP%\IMS.lnk'); $SC.TargetPath = '%INSTALL_DIR%\IMS.bat'; $SC.WorkingDirectory = '%INSTALL_DIR%'; $SC.IconLocation = '%INSTALL_DIR%\logo.ico'; $SC.Description = 'IMS - Inventory Management System'; $SC.Save()"
-
-REM Create Start Menu Shortcut
-set "START_MENU=%ProgramData%\Microsoft\Windows\Start Menu\Programs"
-if not exist "%START_MENU%\IMS" mkdir "%START_MENU%\IMS"
-powershell -Command "$WS = New-Object -ComObject WScript.Shell; $SC = $WS.CreateShortcut('%START_MENU%\IMS\IMS.lnk'); $SC.TargetPath = '%INSTALL_DIR%\IMS.bat'; $SC.WorkingDirectory = '%INSTALL_DIR%'; $SC.IconLocation = '%INSTALL_DIR%\logo.ico'; $SC.Description = 'IMS - Inventory Management System'; $SC.Save()"
 
 echo ============================================================
 echo STEP 6 of 6: Creating Uninstaller

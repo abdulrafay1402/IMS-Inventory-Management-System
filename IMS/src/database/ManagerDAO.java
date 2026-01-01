@@ -137,7 +137,7 @@ public class ManagerDAO {
 
     // Request new cashier (add to cashier_manager with PENDING status)
     public static boolean requestCashier(int managerId, String name, String username,
-                                         String password, String phone, String cnic) {
+                                         String password, String phone, String cnic, double salary) {
         Connection conn = null;
         PreparedStatement ps1 = null;
         PreparedStatement ps2 = null;
@@ -147,15 +147,16 @@ public class ManagerDAO {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // First insert the cashier user
-            String sql1 = "INSERT INTO users (username, password, role, name, phone, cnic, status) " +
-                    "VALUES (?, ?, 'CASHIER', ?, ?, ?, 'PENDING')";
+            // First insert the cashier user with salary
+            String sql1 = "INSERT INTO users (username, password, role, name, phone, cnic, salary, status) " +
+                    "VALUES (?, ?, 'CASHIER', ?, ?, ?, ?, 'PENDING')";
             ps1 = conn.prepareStatement(sql1, Statement.RETURN_GENERATED_KEYS);
             ps1.setString(1, username);
             ps1.setString(2, password);
             ps1.setString(3, name);
             ps1.setString(4, phone);
             ps1.setString(5, cnic);
+            ps1.setDouble(6, salary);
 
             int rows = ps1.executeUpdate();
             if (rows > 0) {

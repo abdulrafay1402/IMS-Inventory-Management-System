@@ -2,6 +2,7 @@ package ui;
 
 import models.*;
 import database.CashierInventoryDAO;
+import database.NotificationDAO;
 import utils.ElegantMessageDialog;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -89,9 +90,31 @@ class CreateBillPanel extends JPanel {
         int tableHeaderFontSize = Math.max(12, screenSize.width / 100);
         int tableFontSize = Math.max(11, screenSize.width / 110);
         int tableRowHeight = Math.max(25, screenSize.height / 35);
-        productsTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, tableHeaderFontSize));
         productsTable.setFont(new Font("Arial", Font.PLAIN, tableFontSize));
         productsTable.setRowHeight(tableRowHeight);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader productsHeader = productsTable.getTableHeader();
+        productsHeader.setFont(new Font("Arial", Font.BOLD, tableHeaderFontSize));
+        productsHeader.setBackground(new Color(0, 150, 136)); // Cashier Teal
+        productsHeader.setForeground(Color.WHITE);
+        productsHeader.setOpaque(true);
+        
+        final int headerFontSize = tableHeaderFontSize;
+        productsTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, headerFontSize));
+                label.setBackground(new Color(0, 150, 136)); // Cashier Teal
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(productsTable);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -147,9 +170,31 @@ class CreateBillPanel extends JPanel {
         int tableHeaderFontSize = Math.max(12, screenSize.width / 100);
         int tableFontSize = Math.max(11, screenSize.width / 110);
         int tableRowHeight = Math.max(25, screenSize.height / 35);
-        cartTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, tableHeaderFontSize));
         cartTable.setFont(new Font("Arial", Font.PLAIN, tableFontSize));
         cartTable.setRowHeight(tableRowHeight);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader cartHeader = cartTable.getTableHeader();
+        cartHeader.setFont(new Font("Arial", Font.BOLD, tableHeaderFontSize));
+        cartHeader.setBackground(new Color(0, 150, 136)); // Cashier Teal
+        cartHeader.setForeground(Color.WHITE);
+        cartHeader.setOpaque(true);
+        
+        final int headerFontSize = tableHeaderFontSize;
+        cartTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, headerFontSize));
+                label.setBackground(new Color(0, 150, 136)); // Cashier Teal
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(cartTable);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -368,7 +413,29 @@ class CreateBillPanel extends JPanel {
 
             double totalAmount = calculateTotal();
 
-            if (CashierInventoryDAO.createBill(currentUser.getId(), managerId, billItems, totalAmount)) {
+            String billNumber = CashierInventoryDAO.createBill(currentUser.getId(), managerId, billItems, totalAmount);
+            if (billNumber != null) {
+                // Notify manager about new bill
+                try {
+                    NotificationDAO.createNotification(
+                        managerId,
+                        "BILL_CREATED",
+                        "New Bill Created",
+                        String.format("Cashier %s created a new bill worth $%.2f", 
+                            currentUser.getName(), totalAmount),
+                        billNumber
+                    );
+                } catch (Exception e) {
+                    // Log but don't fail the operation
+                    System.err.println("Failed to create notification: " + e.getMessage());
+                }
+                
+                ElegantMessageDialog.showMessage(this,
+                        String.format("Bill created successfully!\nBill Number: %s\nTotal Amount: $%.2f", 
+                            billNumber, totalAmount),
+                        "Bill Created",
+                        JOptionPane.INFORMATION_MESSAGE);
+                
                 // Clear cart and refresh products
                 clearCart();
                 loadProducts();

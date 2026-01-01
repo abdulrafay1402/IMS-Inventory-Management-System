@@ -70,9 +70,30 @@ class AddStockPanel extends JPanel {
         };
         availableProductsTable = new JTable(availableTableModel);
         availableProductsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        availableProductsTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         availableProductsTable.setFont(new Font("Arial", Font.PLAIN, 14));
         availableProductsTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader availableHeader = availableProductsTable.getTableHeader();
+        availableHeader.setFont(new Font("Arial", Font.BOLD, 16));
+        availableHeader.setBackground(new Color(34, 139, 34)); // Manager Green
+        availableHeader.setForeground(Color.WHITE);
+        availableHeader.setOpaque(true);
+        
+        availableProductsTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(34, 139, 34));
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         // Add mouse listener to update selling price when product is selected
         availableProductsTable.addMouseListener(new MouseAdapter() {
@@ -110,9 +131,30 @@ class AddStockPanel extends JPanel {
         };
         selectedProductsTable = new JTable(selectedTableModel);
         selectedProductsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        selectedProductsTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         selectedProductsTable.setFont(new Font("Arial", Font.PLAIN, 14));
         selectedProductsTable.setRowHeight(35);
+        
+        // Configure header with proper visibility
+        javax.swing.table.JTableHeader selectedHeader = selectedProductsTable.getTableHeader();
+        selectedHeader.setFont(new Font("Arial", Font.BOLD, 16));
+        selectedHeader.setBackground(new Color(34, 139, 34)); // Manager Green
+        selectedHeader.setForeground(Color.WHITE);
+        selectedHeader.setOpaque(true);
+        
+        selectedProductsTable.getTableHeader().setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel label = new JLabel(value.toString());
+                label.setFont(new Font("Arial", Font.BOLD, 16));
+                label.setBackground(new Color(34, 139, 34));
+                label.setForeground(Color.WHITE);
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                label.setHorizontalAlignment(CENTER);
+                return label;
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(selectedProductsTable);
         panel.add(scrollPane, BorderLayout.CENTER);

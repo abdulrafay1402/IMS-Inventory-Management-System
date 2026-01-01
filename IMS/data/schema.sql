@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT NOT NULL,
     phone TEXT,
     cnic TEXT UNIQUE NOT NULL,
+    salary DECIMAL(10,2) DEFAULT 0.00,
     status TEXT DEFAULT 'ACTIVE' CHECK(status IN ('ACTIVE', 'PENDING', 'INACTIVE')),
+    joining_date DATE,
     created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -140,11 +142,47 @@ CREATE TABLE IF NOT EXISTS stock_transfer (
     FOREIGN KEY (to_manager_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- 10. Insert default CEO user (password: ceo123)
-INSERT OR IGNORE INTO users (username, password, role, name, phone, cnic, status)
-VALUES ('ceo', 'ceo123', 'CEO', 'System Administrator', '03001234567', '1234567890123', 'ACTIVE');
+-- 10. Notifications Table
+CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('CASHIER_REQUEST', 'CASHIER_APPROVED', 'CASHIER_REJECTED', 'BILL_CREATED', 'MONTHLY_REPORT', 'STOCK_LOW', 'GENERAL')),
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    related_id TEXT,
+    is_read INTEGER DEFAULT 0 CHECK(is_read IN (0, 1)),
+    created_at DATETIME DEFAULT (datetime('now', 'localtime')),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
--- 11. Sample data for testing
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at);
+
+-- 11. Salary Payments Table
+CREATE TABLE IF NOT EXISTS salary_payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_month TEXT NOT NULL, -- Format: 'YYYY-MM' (e.g., '2026-01')
+    payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'PAID' CHECK(status IN ('PAID', 'PENDING', 'CANCELLED')),
+    notes TEXT,
+    created_by INTEGER, -- Manager who processed the payment
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    UNIQUE(user_id, payment_month) -- Prevent duplicate payments for same month
+);
+
+CREATE INDEX IF NOT EXISTS idx_salary_payments_user_id ON salary_payments(user_id);
+CREATE INDEX IF NOT EXISTS idx_salary_payments_month ON salary_payments(payment_month);
+CREATE INDEX IF NOT EXISTS idx_salary_payments_status ON salary_payments(status);
+
+-- 12. Insert default CEO user (password: ceo123)
+INSERT OR IGNORE INTO users (username, password, role, name, phone, cnic, salary, status)
+VALUES ('ceo', 'ceo123', 'CEO', 'System Administrator', '03001234567', '1234567890123', 0.00, 'ACTIVE');
+
+-- 13. Sample data for testing
 INSERT OR IGNORE INTO ceo_inventory (product_name, buying_price, total_quantity, min_stock_level)
 VALUES 
     ('Laptop HP 15', 45000.00, 50, 10),

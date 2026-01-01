@@ -15,6 +15,10 @@ class AddManagerPanel extends JPanel {
     private JTextField cnicField;
     private JTextField usernameField;
     private JTextField phoneField;
+    private JTextField salaryField;
+    private JTextField bonusField;
+    private JComboBox<String> adjustmentTypeCombo;
+    private JTextField adjustmentAmountField;
     private JPasswordField passwordField;
     private JButton addButton;
 
@@ -25,26 +29,21 @@ class AddManagerPanel extends JPanel {
 
     private void initializeUI() {
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
 
-        // Header - Enhanced styling
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int headerFontSize = Math.max(18, screenSize.width / 70);
-        JLabel headerLabel = new JLabel("Add New Employee (Manager)", SwingConstants.CENTER);
-        headerLabel.setFont(new Font("Arial", Font.BOLD, headerFontSize));
+        // Header
+        JLabel headerLabel = new JLabel("Add New Manager", SwingConstants.CENTER);
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 26));
         headerLabel.setForeground(new Color(0, 102, 204));
-        headerLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+        headerLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
         add(headerLabel, BorderLayout.NORTH);
 
-        // Form Panel - Centered
+        // Form Panel
         JPanel formPanel = new JPanel(new GridBagLayout());
-        Dimension screenSize2 = Toolkit.getDefaultToolkit().getScreenSize();
-        int formPadding = Math.max(30, Math.min(screenSize2.width, screenSize2.height) / 25);
-        formPanel.setBorder(BorderFactory.createEmptyBorder(formPadding, formPadding, formPadding, formPadding));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(12, 12, 12, 12);
-        gbc.anchor = GridBagConstraints.CENTER; // Center alignment
+        gbc.insets = new Insets(8, 10, 8, 10);
 
         int row = 0;
 
@@ -72,19 +71,72 @@ class AddManagerPanel extends JPanel {
         // Phone
         addFormField(formPanel, gbc, row++, "Phone (11 digits):", phoneField = new JTextField(20));
 
+        // Salary
+        addFormField(formPanel, gbc, row++, "Base Salary (Rs.)*:", salaryField = new JTextField(20));
+        salaryField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                validateSalary();
+            }
+        });
+
+        // Bonus
+        addFormField(formPanel, gbc, row++, "Bonus (Rs.):", bonusField = new JTextField(20));
+        bonusField.setToolTipText("Optional: Additional bonus amount");
+
+        // Salary Adjustment
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0.3;
+        gbc.gridwidth = 1;
+        gbc.insets = new Insets(8, 10, 8, 5);
+        JLabel adjustLabel = new JLabel("Salary Adjustment:");
+        adjustLabel.setFont(new Font("Arial", Font.BOLD, 15));
+        formPanel.add(adjustLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        gbc.insets = new Insets(8, 5, 8, 10);
+        JPanel adjustmentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        adjustmentTypeCombo = new JComboBox<>(new String[]{"None", "Increment", "Decrement"});
+        adjustmentTypeCombo.setFont(new Font("Arial", Font.PLAIN, 15));
+        adjustmentTypeCombo.setPreferredSize(new Dimension(120, 30));
+        adjustmentAmountField = new JTextField(10);
+        adjustmentAmountField.setFont(new Font("Arial", Font.PLAIN, 15));
+        adjustmentAmountField.setToolTipText("Adjustment amount in Rs.");
+        adjustmentAmountField.setEnabled(false);
+        adjustmentTypeCombo.addActionListener(e -> {
+            adjustmentAmountField.setEnabled(!adjustmentTypeCombo.getSelectedItem().equals("None"));
+            if (adjustmentTypeCombo.getSelectedItem().equals("None")) {
+                adjustmentAmountField.setText("");
+            }
+        });
+        adjustmentPanel.add(adjustmentTypeCombo);
+        adjustmentPanel.add(adjustmentAmountField);
+        formPanel.add(adjustmentPanel, gbc);
+        row++;
+
         // Password
         addFormField(formPanel, gbc, row++, "Password*:", passwordField = new JPasswordField(20));
 
-        // Add Button
+        // Buttons
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
 
-        addButton = createStyledButton("Add Manager", new Color(0, 153, 51), Color.WHITE);
-        addButton.setPreferredSize(new Dimension(150, 35));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        addButton = createStyledButton("Add Manager", new Color(0, 102, 204), Color.WHITE);
+        addButton.setPreferredSize(new Dimension(180, 48));
         addButton.addActionListener(e -> addManager());
-        formPanel.add(addButton, gbc);
+
+        JButton clearButton = createStyledButton("Clear Form", new Color(108, 117, 125), Color.WHITE);
+        clearButton.setPreferredSize(new Dimension(180, 48));
+        clearButton.addActionListener(e -> clearForm());
+
+        buttonPanel.add(addButton);
+        buttonPanel.add(clearButton);
+        formPanel.add(buttonPanel, gbc);
 
         add(formPanel, BorderLayout.CENTER);
     }
@@ -106,12 +158,12 @@ class AddManagerPanel extends JPanel {
             }
         };
 
-        // Use a more compact font and reduce padding
-        button.setFont(new Font("Arial", Font.BOLD, 12)); // Smaller font size
+        // Professional button styling
+        button.setFont(new Font("Arial", Font.BOLD, 16));
         button.setForeground(textColor);
         button.setContentAreaFilled(false);
         button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12)); // Reduced padding
+        button.setBorder(BorderFactory.createEmptyBorder(12, 30, 12, 30));
         button.setOpaque(false);
 
         button.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -134,13 +186,15 @@ class AddManagerPanel extends JPanel {
         gbc.gridy = row;
         gbc.weightx = 0.3;
         gbc.gridwidth = 1;
+        gbc.insets = new Insets(8, 10, 8, 5);
         JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Arial", Font.BOLD, 12));
+        label.setFont(new Font("Arial", Font.BOLD, 15));
         panel.add(label, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 0.7;
-        field.setFont(new Font("Arial", Font.PLAIN, 12));
+        gbc.insets = new Insets(8, 5, 8, 10);
+        field.setFont(new Font("Arial", Font.PLAIN, 15));
         panel.add(field, gbc);
     }
 
@@ -152,6 +206,24 @@ class AddManagerPanel extends JPanel {
             cnicField.setBackground(new Color(255, 200, 200));
         } else {
             cnicField.setBackground(Color.WHITE);
+        }
+    }
+
+    private void validateSalary() {
+        String salary = salaryField.getText().trim();
+        if (!salary.isEmpty()) {
+            try {
+                double sal = Double.parseDouble(salary);
+                if (sal < 0) {
+                    salaryField.setBackground(new Color(255, 200, 200));
+                } else {
+                    salaryField.setBackground(Color.WHITE);
+                }
+            } catch (NumberFormatException e) {
+                salaryField.setBackground(new Color(255, 200, 200));
+            }
+        } else {
+            salaryField.setBackground(Color.WHITE);
         }
     }
 
@@ -171,11 +243,67 @@ class AddManagerPanel extends JPanel {
         String cnic = cnicField.getText().trim();
         String username = usernameField.getText().trim();
         String phone = phoneField.getText().trim();
+        String salaryStr = salaryField.getText().trim();
+        String bonusStr = bonusField.getText().trim();
+        String adjustmentType = (String) adjustmentTypeCombo.getSelectedItem();
+        String adjustmentAmountStr = adjustmentAmountField.getText().trim();
         String password = new String(passwordField.getPassword());
 
         // Validation
-        if (name.isEmpty() || cnic.isEmpty() || username.isEmpty() || password.isEmpty()) {
+        if (name.isEmpty() || cnic.isEmpty() || username.isEmpty() || password.isEmpty() || salaryStr.isEmpty()) {
             showError("Please fill all required fields (*)");
+            return;
+        }
+
+        double salary;
+        try {
+            salary = Double.parseDouble(salaryStr);
+            if (salary < 0) {
+                showError("Salary cannot be negative");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            showError("Please enter a valid salary amount");
+            return;
+        }
+
+        // Handle bonus
+        double bonus = 0;
+        if (!bonusStr.isEmpty()) {
+            try {
+                bonus = Double.parseDouble(bonusStr);
+                if (bonus < 0) {
+                    showError("Bonus cannot be negative");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                showError("Please enter a valid bonus amount");
+                return;
+            }
+        }
+
+        // Handle adjustment
+        double adjustment = 0;
+        if (!"None".equals(adjustmentType) && !adjustmentAmountStr.isEmpty()) {
+            try {
+                adjustment = Double.parseDouble(adjustmentAmountStr);
+                if (adjustment < 0) {
+                    showError("Adjustment amount cannot be negative");
+                    return;
+                }
+                if ("Decrement".equals(adjustmentType)) {
+                    adjustment = -adjustment;
+                }
+            } catch (NumberFormatException e) {
+                showError("Please enter a valid adjustment amount");
+                return;
+            }
+        }
+
+        // Calculate final salary
+        double finalSalary = salary + bonus + adjustment;
+        if (finalSalary < 0) {
+            showError("Final salary cannot be negative. Please adjust your values.");
             return;
         }
 
@@ -209,10 +337,18 @@ class AddManagerPanel extends JPanel {
             return;
         }
 
-        // Add manager to database
-        if (UserDAO.addManager(username, password, name, phone, cnic, currentUser.getId())) {
-            JOptionPane.showMessageDialog(this,
-                    "Manager added successfully!",
+        // Add manager to database with final calculated salary
+        if (UserDAO.addManager(username, password, name, phone, cnic, finalSalary, currentUser.getId())) {
+            String salaryBreakdown = "Base: Rs. " + String.format("%,.2f", salary);
+            if (bonus > 0) salaryBreakdown += " + Bonus: Rs. " + String.format("%,.2f", bonus);
+            if (adjustment != 0) {
+                salaryBreakdown += (adjustment > 0 ? " + Increment: Rs. " : " - Decrement: Rs. ") + 
+                                  String.format("%,.2f", Math.abs(adjustment));
+            }
+            salaryBreakdown += " = Final: Rs. " + String.format("%,.2f", finalSalary);
+            
+            utils.ElegantMessageDialog.showMessage(this,
+                    "Manager added successfully!\n" + salaryBreakdown,
                     "Success",
                     JOptionPane.INFORMATION_MESSAGE);
             clearForm();
@@ -226,11 +362,15 @@ class AddManagerPanel extends JPanel {
         cnicField.setText("");
         usernameField.setText("");
         phoneField.setText("");
+        salaryField.setText("");
+        bonusField.setText("");
+        adjustmentTypeCombo.setSelectedIndex(0);
+        adjustmentAmountField.setText("");
         passwordField.setText("");
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+        utils.ElegantMessageDialog.showMessage(this, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
 
