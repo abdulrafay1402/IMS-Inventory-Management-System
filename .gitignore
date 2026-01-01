@@ -1,0 +1,22 @@
+# IDE files
+.idea/
+*.iml
+
+# Compiled files
+*.class
+out/
+
+# Build artifacts
+*.jar
+*.zip
+
+# Database files
+*.sqlite
+*.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
