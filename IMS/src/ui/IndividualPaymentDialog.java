@@ -19,6 +19,17 @@ public class IndividualPaymentDialog extends JDialog {
         super(parent, "Pay Salary - " + employeeName, true);
         this.baseSalary = baseSalary;
         
+        // Set window icon
+        try {
+            java.net.URL imageURL = getClass().getClassLoader().getResource("image/logo.jpg");
+            if (imageURL != null) {
+                ImageIcon logoIcon = new ImageIcon(imageURL);
+                setIconImage(logoIcon.getImage());
+            }
+        } catch (Exception e) {
+            // Icon not found, continue without it
+        }
+        
         setLayout(new BorderLayout(0, 0));
         setSize(650, 580);
         setLocationRelativeTo(parent);

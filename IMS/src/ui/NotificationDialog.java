@@ -42,6 +42,17 @@ public class NotificationDialog extends JDialog {
     }
 
     private void initializeUI() {
+        // Set window icon
+        try {
+            java.net.URL imageURL = getClass().getClassLoader().getResource("image/logo.jpg");
+            if (imageURL != null) {
+                ImageIcon logoIcon = new ImageIcon(imageURL);
+                setIconImage(logoIcon.getImage());
+            }
+        } catch (Exception e) {
+            // Icon not found, continue without it
+        }
+        
         setSize(550, 600);
         setLocationRelativeTo(getOwner());
         setResizable(true);

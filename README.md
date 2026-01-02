@@ -261,10 +261,16 @@ This project is available for educational and commercial use.
 
 ---
 
-## 👨‍💻 Developer
+## 👨‍💻 Developers
 
 **Abdul Rafay**
 - GitHub: [@abdulrafay1402](https://github.com/abdulrafay1402)
+
+**Bisma Shahid**
+- GitHub: [@Bisma-404](https://github.com/Bisma-404)
+
+**Afshal Liaquat**
+- GitHub: [@afshalliaquat](https://github.com/afshalliaquat)
 
 ---
 
@@ -278,7 +284,11 @@ For issues and feature requests, please use the [Issues](https://github.com/abdu
 
 ## 📸 Screenshots
 
-*Coming soon - Application interface screenshots*
+### Application Interface
+
+![IMS Screenshot 1](IMS/image/img1.png)
+
+![IMS Screenshot 2](IMS/image/img2.png)
 
 ---
 

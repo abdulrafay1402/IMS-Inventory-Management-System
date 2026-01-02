@@ -1,18 +1,33 @@
 # IDE files
 .idea/
 *.iml
+.vscode/
+.eclipse/
+.settings/
+.classpath
+.project
 
 # Compiled files
 *.class
 out/
+target/
+bin/
 
-# Build artifacts
+# Build artifacts - DO NOT COMMIT
 *.jar
 *.zip
+*.exe
+IMS-Installer*/
 
-# Database files
+# Database files - DO NOT COMMIT
 *.sqlite
+*.sqlite.backup
 *.db
+IMS/app/data/
+
+# Temporary installer files
+release/
+RELEASE_NOTES.md
 
 # OS files
 .DS_Store
@@ -20,3 +35,10 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Node modules (if any)
+node_modules/
+.vercel
+
+# Application runtime data
+IMS/app/
