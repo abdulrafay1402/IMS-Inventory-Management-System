@@ -292,4 +292,3 @@ For issues and feature requests, please use the [Issues](https://github.com/abdu
 
 ---
 
-**Made with ❤️ using Java Swing**
