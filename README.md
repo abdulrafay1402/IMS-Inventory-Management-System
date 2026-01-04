@@ -6,7 +6,7 @@ A comprehensive **Java-based Inventory Management System** with multi-level user
 
 ### Download & Install
 
-**[📦 Download IMS-Installer.zip](https://github.com/abdulrafay1402/IMS--Inventory-Management-System-/releases/latest/download/IMS-Installer.zip)**
+**[📦 Download IMS-Installer.zip](https://ims-management.vercel.app/download.html)**
 
 1. **Extract** the downloaded ZIP file
 2. **Run** `install.bat` as Administrator
